@@ -7,9 +7,35 @@ import POSController
 import os
 
 #Getting the inputs commands to show it to the user
-#InputCommands=POSController.GetInputCommand()
+InputCommands=POSController.GetInputCommand()
 #Intializing the User choice value with empty string
 UserChoice=""
+
+"""
+Desc: Gets the user choice of the operation he wants to perform
+Param:
+Return: string of the user input
+"""
+def GetUserChoice():
+    InputStr=input("Please select an operation by writing the letter(s) in the brackets[]:")
+    InputStr=InputStr.strip()
+    POSController.CancelProgram(InputStr)
+    return InputStr
+
+
+"""
+Desc: Print the welcome message to the screen with POS menu
+Param:
+Return:
+"""
+def WelcomeMessage():
+    print("""
+    \t\tWelcome to POS system\n
+    POS Menu:""")
+    for item in InputCommands:
+        print("\t",InputCommands[item])
+    print("\n")
+    print("Note: if you want to exist the program at anytime type cancel\n")
 
 
 """
@@ -20,107 +46,87 @@ Return:
 def main():
     WelcomeMessage()
     UserChoice=GetUserChoice()
-    newchoice=[]
-    Status=POSController.ProceedWithUserSelection(UserChoice,newchoice)
-    UserChoice=newchoice[0]
-    if Status=="Report":
-        ShowReport(POSController.PrepareReport())
-    elif Status=="CRM":
-        ShowCRM(POSController.PrepareCRM())
-    else:
-        print(Status)
-    PressEnterToContinue()
-    os.system('cls')
+    # FUCK PYTHON, for no reason the following line sometimes works and sometimes not
+    #Fuck Python
+    #while UserChoice.lower() not in (str(InputCommands.keys()).lower()):
+    while UserChoice not in InputCommands.keys():
+        print("\nWrong Selection!")     
+        UserChoice=GetUserChoice()
+    print("Your Selection was",InputCommands[UserChoice],"\n")
+    ProceedWithUserSelection(UserChoice)
     return UserChoice
 
+
 """
-Desc: Print the sales amount Report
-Param:
+Desc: Checking on the user input selection to start the appropriate process
+Param: string of the user input to check on it
 Return:
 """
-def ShowReport(ReportList):
-    print("\nThe Sales Amount Report Broken down by payment type:")
-    for item in ReportList:
-        if item[0]=="Cash":
-            print("Cash Sales Amount: ",item[1])
-        else:
-            print("Credit Sales Amount: ",item[1])
+def ProceedWithUserSelection(UserChoice):
+    if UserChoice.lower()=="s":
+        AddSales()
+    elif UserChoice.lower()=="ac":
+        AddCustomer()
+    elif UserChoice.lower()=="d":
+        CloseOfDay()
+    elif UserChoice.lower()=="r":
+        GenerateReport()
+    elif UserChoice.lower()=="crm":
+        GetCRM()
+    elif UserChoice.lower()=="allc":
+        GetAllCustomers()
+    elif UserChoice.lower()=="q":
+        print("\nThanks for using POS System\n")
+    PressEnterToContinue()
+    os.system('cls')
 
-
-"""
-Desc: Print the CRM Report
-Param:
-Return:
-"""
-def ShowCRM(CRMDictionary):
-    print("\nCRM Report:")
-    for item in CRMDictionary.keys():
-        print("Customer: ",item," made sales of ",CRMDictionary[item])
-
-"""
-Desc: Print the welcome message to the screen with POS menu
-Param:
-Return:
-"""
-def WelcomeMessage():
-    print("""
-    \t\tWelcome to POS system\n
-    For adding sales, please use one of the following examples
-    (1) Sale #Amount# – Cash sale of that amount number, i.e. Sale 1000
-    (2) Sale #SKU:number – Sale of a item in stock, i.e. Sale SKU:10
-    (3) Sale #Amount# #CC# - Credit card sales, i.e. Sale 1000 CC
-    (4) Sale #Amount# #ID:9alfanumeric – Sale to a registered customer, i.e. Sale 90 ID:213dhj
-    
-    For adding new customer:
-    Customer name ID:9alfanumeric” – New customer, i.e. Customer Peter ID:19beta
-    
-    For Close of Sales Day, just write Close day
-    To Print sales for the day , write Report
-    To print breakdown of sales for the day by client, write CRM
-    To quit the menu, write quit
-    """)
-    print("Note: if you want to exist the program at anytime type cancel\n")
-
-
-"""
-Desc: Gets the user choice of the operation he wants to perform
-Param:
-#InputStr=InputFromUser("Please enter the operation you want to perform: ")
-Return: string of the user input
-"""
-def GetUserChoice():
-    InputStr=InputFromUser("Please enter the operation you want to perform: ")
-    POSController.CancelProgramCheck(InputStr)
-    return InputStr
-
-
-"""
-Desc: Gets the user input and trim the white spaces 
-Param:
-Return: string of the user input
-"""
-def InputFromUser(Msg):
-    InputStr=input(Msg)
-    InputStr=InputStr.strip() #Removing white spaces on left or right of the whole string
-    return InputStr
-    
-"""
-Desc: Print the message to the user, this was made to encapsulate the print command,
-    so controller can call this function without caring how actually the print is done
-Param:
-Return: 
-"""
-def PrintToUser(Msg):
-    return print(Msg)
-    
 """
 Desc: Just to pause the program, was made to use after finishing each process
 Param:
 Return:
 """
 def PressEnterToContinue():
-    return input("Press Enter to Continue!!")
+    return input("Press Any Key to Continue!!")
 
+"""
+Desc: Add a new sale
+Param: 
+Return: 
+"""
+def AddSales():
+    Article=GetArticleByID()
+    print("\n")
+    Customer=GetCustomerByID()
+    print("\n")
+    Quantity=GetQuantity()
+    print("\n")
+    Payment=GetPaymentType()
+    print("\n")
+    Status=POSController.AddSalesc(Article,Customer,Quantity,Payment)
+    if Status=="Success":
+        print("The Sale successfuly added for:")
+        print("Article:",Article[1][0])
+        print("Customer:",Customer[1])
+        print("Quantity:",Quantity)
+        print("Payment:",Payment)
+        print("\n")
+    else:
+        print("Error: Sales couldn't be added")
+"""
+Desc: Takes the ID input from the user, whether this ID is for Artice or Customer etc..
+Param: string of name of the item
+Return: Item ID of type string
+"""
+def EnterID(Item):
+    nstr="Please Enter the ID of the "+Item+" to sale: "
+    InputStr=input(nstr)
+    InputStr=InputStr.strip()
+    POSController.CancelProgram(InputStr)
+    while not InputStr.isnumeric():
+        print("This is not a number")
+        InputStr=input(nstr)
+        POSController.CancelProgram(InputStr)
+    return int(InputStr)
     
 """
 Desc: print out that this item (Article or Customer, etc..) is not found
@@ -130,3 +136,126 @@ Return:
 def ItemNotFound(item):
     print("The ",item," wasn't found, please re-enter it again")
 
+"""
+Desc: Return the Article that the user wants
+Param: 
+Return: Article that the user wants
+"""
+def GetArticleByID():
+    ArticleID=EnterID("Article")
+    Article=POSController.GetArticleByIDc(ArticleID)
+    while Article is None:
+        ItemNotFound("Article")
+        ArticleID=EnterID("Article")
+    print("The Article that was choosed is ", Article[0]," and its price is ",Article[1])
+    return (ArticleID,Article)
+
+"""
+Desc: Return the Customer that the user wants
+Param: 
+Return: Customer that the user wants
+"""
+def GetCustomerByID():
+    CustomerID=EnterID("Customer")
+    Customer=POSController.GetCustomerByIDc(CustomerID)
+    while Customer is None:
+        ItemNotFound("Customer")
+        CustomerID=EnterID("Customer")
+    print("The Customer that was choosed is ", Customer)
+    return (CustomerID,Customer)
+
+
+"""
+Desc: Takes the quantity of sales from the user.
+Param: 
+Return: Quantity as string
+"""
+def EnterQuantity():
+    InputStr=input("Please Enter the quantity:")
+    InputStr=InputStr.strip()
+    POSController.CancelProgram(InputStr)
+    return InputStr
+    
+
+    
+    
+"""
+Desc: Return the Quantity that the user wants
+Param: 
+Return: Quantity as interger number
+"""
+def GetQuantity():
+    InputStr=EnterQuantity()
+    while not InputStr.isnumeric():
+        print("This is not a valid number, please enter a valid one")
+        InputStr=EnterQuantity()
+    while int(InputStr)<0:
+        print("This is a negative number, please enter a valid positive number")
+        InputStr=EnterQuantity()
+    return int(InputStr)
+
+"""
+Desc: Takes the payment of sales from the user.
+Param: 
+Return: Payment as string
+"""
+def EnterPayment():
+    nstr="Please choose the payment type "+ POSController.GetPaymentTypesc().__str__()+" :"
+    InputStr=input(nstr)
+    InputStr=InputStr.strip()
+    POSController.CancelProgram(InputStr)
+    return InputStr
+
+"""
+Desc: Return the Payment that the user wants
+Param: 
+Return: Payment as string
+"""
+def GetPaymentType():
+    InputStr=EnterPayment()
+    Payments=POSController.GetPaymentTypesc()
+    while InputStr not in Payments:
+        print("This is not a valid payment, please enter a valid one")
+        InputStr=EnterPayment()
+    return InputStr
+
+"""
+Desc: Takes the Customer Name from the user.
+Param: 
+Return: Customer Name as string
+"""
+def EnterCustomerName():
+    CustomerName=input("Please Enter the Customer Name: ")
+    CustomerName=CustomerName.strip()
+    return CustomerName
+
+
+"""
+Desc: Adding New Customer
+Param: 
+Return:
+"""
+def AddCustomer():
+    CustomerName=EnterCustomerName()
+    while CustomerName=="":
+        print("Wrong Entry")
+        CustomerName=EnterCustomerName()
+    NewCustomerID=POSController.AddCustomerc(CustomerName)
+    if NewCustomerID>0:
+        print("The Customer ",CustomerName," was successfuly added with new ID:",NewCustomerID)
+    else:
+        print("Error: Customer couldn't be added")
+
+"""
+Desc: Showing All Customers
+Param: 
+Return:
+"""
+def GetAllCustomers():
+    print(POSController.GetAllCustomersc())
+    
+def GenerateReport():
+    print(POSController.BuildReport())
+#Launch the program
+while UserChoice != "Q":
+    UserChoice=main()
