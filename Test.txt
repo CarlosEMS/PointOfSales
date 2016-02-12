@@ -1,0 +1,23 @@
+Do Backup of what you have in the memory in a file, so when the program opens it will restore whats in the file
+
+
+Report and CRM should write in a file
+
+Refactor code to include objects
+
+Put GUI
+
+Normal Scenario
+
+sale 100 sku:A00000001 id:C00000003 cc
+sale 100 sku:A00000001 id:C00000003
+sale 100 sku:A00000001 
+sale 100 
+
+Bad Scenario
+Sale 100 roosi sku:werwe id:sdfsdf cc
+sale sku::werwe
+sale sku:dss:werwe
+sale sku:werwe CC
+Sale 100 roosi
+sale 100 100
